@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>מעקב תזונה קלינית</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f5f5f5;--bg3:#e8e8e8;
+  --border:#e0e0e0;--border2:#ccc;
+  --text:#1a1a1a;--sub:#888;
+  --r:12px;--rs:8px;
+  --cal:#B45309;--cal-f:#EF9F27;
+  --pro:#0F6E56;--pro-f:#1D9E75;
+  --carb:#185FA5;--carb-f:#378ADD;
+  --calc:#7A1FA2;--calc-f:#AB47BC;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#141414;--bg2:#1e1e1e;--bg3:#2a2a2a;--border:#333;--border2:#444;--text:#f0f0f0;--sub:#888;}
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent;}
+.app{max-width:430px;margin:0 auto;padding:16px 16px 80px;}
+.screen{display:none;}.screen.on{display:block;}
+
+/* buttons */
+.btn{width:100%;padding:13px;border:none;border-radius:var(--r);background:var(--text);color:var(--bg);font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:inherit;transition:opacity .15s;}
+.btn:hover{opacity:.88;}.btn:active{opacity:.75;}
+.btn-sec{background:none;border:0.5px solid var(--border2);color:var(--sub);}
+.btn-back{display:inline-flex;align-items:center;gap:6px;background:none;border:0.5px solid var(--border);border-radius:var(--rs);padding:5px 12px;font-size:13px;color:var(--sub);cursor:pointer;margin-bottom:16px;font-family:inherit;}
+.btn-back:hover{background:var(--bg2);}
+.icon-btn{background:none;border:0.5px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-size:12px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.icon-btn:hover{background:var(--bg2);}
+
+/* labels & inputs */
+.sec-label{font-size:11px;font-weight:600;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.f-label{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:5px;display:block;}
+.f-input{width:100%;padding:10px 12px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:14px;margin-bottom:12px;outline:none;font-family:inherit;}
+.f-input:focus{border-color:var(--text);}
+
+/* cards */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;}
+.card-hdr{padding:10px 14px;border-bottom:0.5px solid var(--border);font-size:11px;font-weight:600;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+
+/* LOGIN */
+.login-hero{text-align:center;padding:28px 0 20px;}
+.login-hero .ico{font-size:48px;margin-bottom:10px;}
+.login-hero h1{font-size:24px;font-weight:700;margin-bottom:4px;}
+.login-hero p{font-size:14px;color:var(--sub);}
+.u-card{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg2);border-radius:var(--r);border:0.5px solid var(--border);cursor:pointer;margin-bottom:8px;transition:border-color .15s,transform .1s;}
+.u-card:hover{border-color:var(--border2);}
+.u-card:active{transform:scale(.98);}
+.avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:#fff;flex-shrink:0;}
+.u-name{font-size:15px;font-weight:600;}
+.u-meta{font-size:11px;color:var(--sub);margin-top:2px;}
+.add-btn{width:100%;padding:12px;border:0.5px dashed var(--border2);border-radius:var(--r);background:none;font-size:13px;cursor:pointer;color:var(--sub);margin-top:4px;font-family:inherit;}
+.add-btn:hover{background:var(--bg2);}
+
+/* new user */
+.color-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.cdot{width:32px;height:32px;border-radius:50%;cursor:pointer;opacity:.4;transition:opacity .15s,transform .15s;}
+.cdot.sel{opacity:1;box-shadow:0 0 0 3px var(--bg),0 0 0 5px currentColor;transform:scale(1.1);}
+
+/* goals */
+.profile-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;}
+.pf-fields{display:grid;grid-template-columns:1fr 1fr 1fr;}
+.pf-field{padding:12px 14px;border-left:0.5px solid var(--border);}
+.pf-field:last-child{border-left:none;}
+.pf-label{font-size:11px;color:var(--sub);margin-bottom:6px;}
+.pf-input{width:100%;background:none;border:none;outline:none;font-size:16px;font-weight:600;color:var(--text);font-family:inherit;}
+.pf-unit{font-size:10px;color:var(--sub);margin-top:2px;}
+.gender-row{display:flex;gap:4px;margin-top:6px;}
+.g-div{flex:1;padding:6px 0;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg2);font-size:12px;cursor:pointer;color:var(--sub);transition:all .15s;user-select:none;display:flex;align-items:center;justify-content:center;}
+.g-div.on{background:var(--text);color:var(--bg);border-color:var(--text);}
+.bmi-strip{padding:10px 14px;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.bmi-badge{font-size:10px;padding:2px 8px;border-radius:10px;}
+.preset-note{font-size:11px;color:var(--sub);margin-bottom:10px;padding:8px 12px;background:var(--bg2);border-radius:var(--rs);border:0.5px solid var(--border);line-height:1.5;}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+.preset-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg2);font-size:12px;cursor:pointer;color:var(--sub);transition:all .15s;user-select:none;font-family:inherit;}
+.preset-btn.on{background:var(--bg);border-color:var(--text);color:var(--text);font-weight:600;}
+.pchk{width:16px;height:16px;border-radius:4px;flex-shrink:0;border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;}
+.preset-btn.on .pchk{background:var(--text);border-color:var(--text);}
+.pchk svg{display:none;}.preset-btn.on .pchk svg{display:block;}
+.goal-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;}
+.goal-row{padding:12px 16px;border-bottom:0.5px solid var(--border);}
+.goal-row:last-child{border-bottom:none;}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.goal-name{font-size:14px;font-weight:500;}
+.goal-val{font-size:22px;font-weight:700;}
+.goal-unit{font-size:11px;color:var(--sub);}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;border:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.25);}
+
+/* home */
+.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.greet-name{font-size:21px;font-weight:700;}
+.greet-date{font-size:12px;color:var(--sub);margin-top:2px;}
+.top-acts{display:flex;gap:6px;}
+.banner{background:var(--bg2);border-radius:var(--r);padding:14px;margin-bottom:16px;border:0.5px solid var(--border);}
+.banner-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.goal-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
+.g-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg);border:0.5px solid var(--border2);color:var(--sub);}
+.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.mc{text-align:center;}
+.mc-label{font-size:10px;color:var(--sub);font-weight:500;}
+.mc-val{font-size:18px;font-weight:700;margin-top:2px;}
+.mc-tgt{font-size:9px;color:var(--sub);margin-top:1px;}
+.mc-unit{font-size:9px;color:var(--sub);margin-top:2px;}
+.bar-track{height:4px;background:var(--bg3);border-radius:2px;margin-top:5px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+
+/* capture */
+.cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.cap-btn{position:relative;overflow:hidden;border:none;border-radius:var(--r);cursor:pointer;padding:0;transition:transform .1s,opacity .1s;}
+.cap-btn:active{transform:scale(.97);opacity:.9;}
+.cap-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.cap-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;}
+.cap-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.cap-icon svg{width:22px;height:22px;}
+.cap-txt{font-size:14px;font-weight:600;}
+.cap-sub{font-size:11px;opacity:.7;}
+.cap-cam{background:var(--text);color:var(--bg);}
+.cap-cam .cap-icon{background:rgba(255,255,255,.18);}
+.cap-gal{background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);}
+.cap-gal .cap-icon{background:var(--bg);border:0.5px solid var(--border);}
+.cap-gal .cap-sub{color:var(--sub);opacity:1;}
+
+/* log */
+.log-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:0.5px solid var(--border);}
+.log-item:last-child{border-bottom:none;}
+.log-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;border:0.5px solid var(--border);}
+.log-ph{width:40px;height:40px;border-radius:8px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.log-name{font-size:13px;font-weight:600;}
+.log-meta{font-size:11px;color:var(--sub);margin-top:2px;}
+.log-cal{font-size:13px;font-weight:600;color:var(--sub);margin-left:auto;flex-shrink:0;}
+
+/* preview */
+.prev-img{width:100%;border-radius:var(--r);max-height:280px;object-fit:cover;margin-bottom:12px;border:0.5px solid var(--border);}
+.prev-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.prev-retake{position:relative;overflow:hidden;padding:10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:none;font-size:13px;cursor:pointer;color:var(--sub);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;}
+.prev-retake input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.prev-analyze{padding:10px;border:none;border-radius:var(--rs);background:var(--text);color:var(--bg);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.prev-gal{position:relative;overflow:hidden;width:100%;padding:10px;border:0.5px solid var(--border);border-radius:var(--rs);background:none;font-size:13px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;}
+.prev-gal input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.prev-gal:hover{background:var(--bg2);}
+
+/* loading */
+.load-box{text-align:center;padding:80px 0;}
+.spinner{width:34px;height:34px;border:2.5px solid var(--bg3);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-txt{font-size:15px;font-weight:500;}
+.load-sub{font-size:12px;color:var(--sub);margin-top:4px;}
+
+/* result */
+.res-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.res-thumb{width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0;border:0.5px solid var(--border);}
+.res-name{font-size:17px;font-weight:700;}
+.res-time{font-size:12px;color:var(--sub);margin-top:2px;}
+.totals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.chip{background:var(--bg2);border-radius:var(--rs);padding:10px 4px;text-align:center;border:0.5px solid var(--border);}
+.chip-val{font-size:17px;font-weight:700;}
+.chip-lbl{font-size:9px;color:var(--sub);margin-top:2px;}
+.ing-row{padding:11px 14px;border-bottom:0.5px solid var(--border);}
+.ing-row:last-child{border-bottom:none;}
+.ing-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+.ing-name{font-size:13px;font-weight:600;}
+.ing-amt{font-size:11px;color:var(--sub);margin-top:2px;}
+.ing-cal{font-size:13px;font-weight:700;color:var(--cal);white-space:nowrap;}
+.ing-pills{display:flex;gap:4px;flex-wrap:wrap;}
+.ing-src{font-size:9px;color:var(--sub);margin-top:3px;}
+.pill{font-size:10px;padding:2px 7px;border-radius:20px;}
+.p-pro{background:#E1F5EE;color:#085041;}
+.p-carb{background:#E6F1FB;color:#042C53;}
+.p-calc{background:#F3EAFB;color:#4A1080;}
+.p-warn{background:#FAEEDA;color:#633806;}
+.p-usda{background:#E6F1FB;color:#042C53;font-size:10px;padding:2px 7px;border-radius:10px;}
+.vs-box{background:var(--bg2);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;border:0.5px solid var(--border);}
+.vs-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.vs-row:last-child{margin-bottom:0;}
+.vs-lbl{font-size:12px;color:var(--sub);min-width:66px;}
+.vs-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.vs-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.vs-num{font-size:11px;color:var(--sub);min-width:56px;text-align:right;}
+.bdg{font-size:9px;padding:1px 7px;border-radius:10px;white-space:nowrap;}
+.b-ok{background:#E1F5EE;color:#085041;}
+.b-warn{background:#FAEEDA;color:#633806;}
+.b-over{background:#FCEBEB;color:#501313;}
+
+/* manual entry */
+.manual-banner{background:#FAEEDA;border:0.5px solid #F0B95A;border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#633806;line-height:1.5;}
+.manual-ing-list{margin-bottom:12px;}
+.manual-ing-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.manual-ing-row .f-input{margin-bottom:0;flex:1;}
+.manual-ing-row .f-input.small{flex:0 0 80px;}
+.remove-ing{background:none;border:0.5px solid var(--border2);border-radius:var(--rs);padding:9px 10px;cursor:pointer;color:var(--sub);font-size:14px;flex-shrink:0;line-height:1;}
+
+/* saved */
+.saved-box{text-align:center;padding:80px 0;}
+.saved-ico{width:56px;height:56px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+
+.err-box{background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--rs);padding:11px 14px;font-size:13px;color:#501313;margin-bottom:14px;}
+
+@media(max-width:360px){
+  .cap-grid{grid-template-columns:1fr;}
+  .macro-grid{grid-template-columns:repeat(2,1fr);}
+  .totals{grid-template-columns:repeat(2,1fr);}
+  .pf-fields{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LOGIN -->
+<div id="s-login" class="screen on">
+  <div class="login-hero">
+    <div class="ico">🥗</div>
+    <h1>מעקב תזונה</h1>
+    <p>בחרי את הפרופיל שלך</p>
+  </div>
+  <div id="user-cards"></div>
+  <button class="add-btn" onclick="go('new-user')">+ הוספת פרופיל חדש</button>
+</div>
+
+<!-- NEW USER -->
+<div id="s-new-user" class="screen">
+  <button class="btn-back" onclick="go('login')">→ חזרה</button>
+  <div style="font-size:20px;font-weight:700;margin-bottom:4px;">פרופיל חדש</div>
+  <div style="font-size:13px;color:var(--sub);margin-bottom:20px;">הגדרות אישיות ראשוניות</div>
+  <label class="f-label">שם</label>
+  <input class="f-input" id="new-name" placeholder="שם המטופלת"/>
+  <label class="f-label">צבע פרופיל</label>
+  <div class="color-row">
+    <div class="cdot sel" data-c="#1D9E75" style="background:#1D9E75;" onclick="pickColor(this)"></div>
+    <div class="cdot" data-c="#378ADD" style="background:#378ADD;" onclick="pickColor(this)"></div>
+    <div class="cdot" data-c="#EF9F27" style="background:#EF9F27;" onclick="pickColor(this)"></div>
+    <div class="cdot" data-c="#D85A30" style="background:#D85A30;" onclick="pickColor(this)"></div>
+    <div class="cdot" data-c="#AB47BC" style="background:#AB47BC;" onclick="pickColor(this)"></div>
+    <div class="cdot" data-c="#E53935" style="background:#E53935;" onclick="pickColor(this)"></div>
+  </div>
+  <button class="btn" onclick="createUser()">המשך לקביעת יעדים ←</button>
+</div>
+
+<!-- GOALS -->
+<div id="s-goals" class="screen">
+  <button class="btn-back" onclick="goalsBack()">→ חזרה</button>
+  <div style="font-size:20px;font-weight:700;margin-bottom:2px;" id="goals-title">יעדים יומיים</div>
+  <div style="font-size:13px;color:var(--sub);margin-bottom:14px;" id="goals-sub"></div>
+
+  <div class="sec-label">פרטי מטופלת</div>
+  <div class="profile-card">
+    <div class="pf-fields">
+      <div class="pf-field">
+        <div class="pf-label">גיל</div>
+        <input class="pf-input" id="pf-age" type="number" min="10" max="100" placeholder="—" oninput="updateBMI()"/>
+        <div class="pf-unit">שנים</div>
+      </div>
+      <div class="pf-field">
+        <div class="pf-label">משקל</div>
+        <input class="pf-input" id="pf-weight" type="number" min="30" max="250" placeholder="—" oninput="updateBMI()"/>
+        <div class="pf-unit">ק"ג</div>
+      </div>
+      <div class="pf-field" style="border-left:none;">
+        <div class="pf-label">מגדר</div>
+        <div class="gender-row">
+          <div class="g-div on" id="gb-f" onclick="setGender('f')">♀ נקבה</div>
+          <div class="g-div"    id="gb-m" onclick="setGender('m')">♂ זכר</div>
+        </div>
+      </div>
+    </div>
+    <div class="bmi-strip" id="bmi-strip" style="display:none;">
+      <span style="font-size:11px;color:var(--sub);">BMI מוערך</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;" id="bmi-val">—</span>
+        <span class="bmi-badge" id="bmi-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-label">מטרות הדיאטה — בחרי אחת או יותר</div>
+  <div class="preset-note">ניתן לסמן מספר מטרות. הערכים יחושבו כממוצע של המטרות שנבחרו.</div>
+  <div class="preset-grid">
+    <div class="preset-btn" data-p="weight_loss"  onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>⬇ הורדת משקל</span></div>
+    <div class="preset-btn" data-p="muscle_gain"  onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>💪 בניית שריר</span></div>
+    <div class="preset-btn" data-p="maintain"     onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>⚖ שמירת משקל</span></div>
+    <div class="preset-btn" data-p="low_carb"     onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>🥑 דל פחמימות</span></div>
+    <div class="preset-btn" data-p="high_protein" onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>🥩 עתיר חלבון</span></div>
+    <div class="preset-btn" data-p="high_calcium" onclick="togglePreset(this)"><div class="pchk"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>🦴 עתיר סידן</span></div>
+  </div>
+
+  <div class="sec-label" style="margin-top:4px;">כוונון עדין</div>
+  <div class="goal-card">
+    <div class="goal-row"><div class="goal-top"><span class="goal-name">🔥 קלוריות</span><div style="text-align:right;"><div class="goal-val" id="gv-cal" style="color:var(--cal);">1500</div><div class="goal-unit">קק"ל ליום</div></div></div><input type="range" id="sl-cal" min="800" max="4000" step="50" value="1500" oninput="slChg('cal',this,800,4000,'var(--cal-f)')"/></div>
+    <div class="goal-row"><div class="goal-top"><span class="goal-name">🥩 חלבון</span><div style="text-align:right;"><div class="goal-val" id="gv-pro" style="color:var(--pro);">130</div><div class="goal-unit">גרם ליום</div></div></div><input type="range" id="sl-pro" min="20" max="300" step="5" value="130" oninput="slChg('pro',this,20,300,'var(--pro-f)')"/></div>
+    <div class="goal-row"><div class="goal-top"><span class="goal-name">🍞 פחמימות</span><div style="text-align:right;"><div class="goal-val" id="gv-carb" style="color:var(--carb);">150</div><div class="goal-unit">גרם ליום</div></div></div><input type="range" id="sl-carb" min="20" max="500" step="5" value="150" oninput="slChg('carb',this,20,500,'var(--carb-f)')"/></div>
+    <div class="goal-row"><div class="goal-top"><span class="goal-name">🦴 סידן</span><div style="text-align:right;"><div class="goal-val" id="gv-calc" style="color:var(--calc);">1000</div><div class="goal-unit">מ"ג ליום</div></div></div><input type="range" id="sl-calc" min="200" max="2000" step="50" value="1000" oninput="slChg('calc',this,200,2000,'var(--calc-f)')"/></div>
+  </div>
+  <button class="btn" onclick="saveGoals()">שמרי יעדים ✓</button>
+  <button class="btn btn-sec" onclick="goalsBack()">ביטול</button>
+</div>
+
+<!-- HOME -->
+<div id="s-home" class="screen">
+  <div class="top-bar">
+    <div><div class="greet-name" id="greet-name"></div><div class="greet-date" id="greet-date"></div></div>
+    <div class="top-acts">
+      <button class="icon-btn" onclick="openGoals()">⚙ יעדים</button>
+      <button class="icon-btn" onclick="go('login')">החלף</button>
+    </div>
+  </div>
+  <div class="banner">
+    <div class="banner-top">
+      <div class="sec-label" style="margin-bottom:0;">יעד יומי — התקדמות</div>
+      <button class="icon-btn" onclick="openGoals()">עריכה</button>
+    </div>
+    <div class="goal-tags" id="goal-tags"></div>
+    <div class="macro-grid">
+      <div class="mc"><div class="mc-label">קלוריות</div><div class="mc-val" id="mc-cal" style="color:var(--cal);">0</div><div class="mc-tgt" id="mt-cal">מתוך —</div><div class="bar-track"><div class="bar-fill" id="bf-cal" style="width:0%;background:var(--cal-f);"></div></div><div class="mc-unit">קק"ל</div></div>
+      <div class="mc"><div class="mc-label">חלבון</div><div class="mc-val"    id="mc-pro"  style="color:var(--pro);">0</div><div class="mc-tgt" id="mt-pro">מתוך —</div><div class="bar-track"><div class="bar-fill" id="bf-pro"  style="width:0%;background:var(--pro-f);"></div></div><div class="mc-unit">גרם</div></div>
+      <div class="mc"><div class="mc-label">פחמימות</div><div class="mc-val"  id="mc-carb" style="color:var(--carb);">0</div><div class="mc-tgt" id="mt-carb">מתוך —</div><div class="bar-track"><div class="bar-fill" id="bf-carb" style="width:0%;background:var(--carb-f);"></div></div><div class="mc-unit">גרם</div></div>
+      <div class="mc"><div class="mc-label">סידן</div><div class="mc-val"    id="mc-calc" style="color:var(--calc);">0</div><div class="mc-tgt" id="mt-calc">מתוך —</div><div class="bar-track"><div class="bar-fill" id="bf-calc" style="width:0%;background:var(--calc-f);"></div></div><div class="mc-unit">מ"ג</div></div>
+    </div>
+  </div>
+
+  <div class="sec-label">הוסיפי ארוחה</div>
+  <div class="cap-grid">
+    <label class="cap-btn cap-cam">
+      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)"/>
+      <div class="cap-inner">
+        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <div class="cap-txt">📷 צלמי</div>
+        <div class="cap-sub">פתח מצלמה</div>
+      </div>
+    </label>
+    <label class="cap-btn cap-gal">
+      <input type="file" accept="image/*" onchange="handleFile(event)"/>
+      <div class="cap-inner">
+        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="cap-txt">🖼 גלריה</div>
+        <div class="cap-sub">בחרי תמונה</div>
+      </div>
+    </label>
+  </div>
+
+  <div id="log-wrap" style="display:none;">
+    <div class="sec-label">ארוחות היום</div>
+    <div id="log-list"></div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div id="s-preview" class="screen">
+  <img id="prev-img" class="prev-img"/>
+  <div class="prev-acts">
+    <label class="prev-retake">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      צלמי שוב
+      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)"/>
+    </label>
+    <button class="prev-analyze" onclick="analyze()">נתחי ↗</button>
+  </div>
+  <label class="prev-gal">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    בחרי תמונה אחרת מהגלריה
+    <input type="file" accept="image/*" onchange="handleFile(event)"/>
+  </label>
+</div>
+
+<!-- LOADING -->
+<div id="s-loading" class="screen">
+  <div class="load-box">
+    <div class="spinner"></div>
+    <div class="load-txt" id="ll">מזהה מרכיבים...</div>
+    <div class="load-sub" id="ls">AI מנתח את הארוחה</div>
+  </div>
+</div>
+
+<!-- MANUAL ENTRY -->
+<div id="s-manual" class="screen">
+  <button class="btn-back" onclick="go('preview')">→ חזרה</button>
+  <div style="font-size:20px;font-weight:700;margin-bottom:4px;">הזנה ידנית</div>
+  <div style="font-size:13px;color:var(--sub);margin-bottom:14px;">הזיני את מרכיבי הארוחה ידנית</div>
+
+  <div class="manual-banner" id="manual-reason">הזיני את פרטי הארוחה</div>
+
+  <label class="f-label">שם הארוחה</label>
+  <input class="f-input" id="manual-meal-name" placeholder="למשל: עוף עם אורז"/>
+
+  <div class="sec-label" style="margin-top:4px;">מרכיבים</div>
+  <div class="manual-ing-list" id="manual-ing-list"></div>
+  <button class="btn btn-sec" onclick="addManualIng()" style="margin-bottom:16px;">+ הוסיפי מרכיב</button>
+
+  <button class="btn" onclick="submitManual()">חשבי ערכים תזונתיים ←</button>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="res-hdr">
+    <img id="res-thumb" class="res-thumb"/>
+    <div><div class="res-name" id="res-name"></div><div class="res-time" id="res-time"></div></div>
+  </div>
+  <div class="totals">
+    <div class="chip"><div class="chip-val" id="t-cal" style="color:var(--cal);"></div><div class="chip-lbl">קלוריות</div></div>
+    <div class="chip"><div class="chip-val" id="t-pro" style="color:var(--pro);"></div><div class="chip-lbl">חלבון ג'</div></div>
+    <div class="chip"><div class="chip-val" id="t-carb" style="color:var(--carb);"></div><div class="chip-lbl">פחמימות ג'</div></div>
+    <div class="chip"><div class="chip-val" id="t-calc" style="color:var(--calc);"></div><div class="chip-lbl">סידן מג'</div></div>
+  </div>
+  <div class="card"><div class="card-hdr">מרכיבי הארוחה <span class="p-usda">נתוני USDA</span></div><div id="ing-list"></div></div>
+  <div class="vs-box" id="vs-box" style="display:none;"><div class="sec-label" style="margin-bottom:10px;">השפעה על יעד יומי</div><div id="vs-rows"></div></div>
+  <div id="err-sec"></div>
+  <button class="btn" onclick="saveMeal()">שמרי ארוחה ✓</button>
+  <button class="btn btn-sec" onclick="goHome()">חזרה ללא שמירה</button>
+</div>
+
+<!-- SAVED -->
+<div id="s-saved" class="screen">
+  <div class="saved-box">
+    <div class="saved-ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px;">הארוחה נשמרה!</div>
+    <div style="font-size:13px;color:var(--sub);margin-bottom:24px;">התזונאית שלך תוכל לראות את הנתונים</div>
+    <button class="btn" onclick="goHome()">חזרה לתפריט הראשי</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ====================================================
+// NUTRITION TRACKER — Google Gemini + USDA + Manual
+// ====================================================
+
+const USDA_KEY   = 'DEMO_KEY'; // USDA is free, no key needed for basic use
+const N_E=1008, N_P=1003, N_C=1005, N_CA=1087;
+
+const PRESETS = {
+  weight_loss:  {cal:1300,pro:120,carb:100, calc:1000, label:'הורדת משקל'},
+  muscle_gain:  {cal:2800,pro:200,carb:300, calc:1200, label:'בניית שריר'},
+  maintain:     {cal:2000,pro:120,carb:220, calc:1000, label:'שמירת משקל'},
+  low_carb:     {cal:1800,pro:150,carb:50,  calc:1000, label:'דל פחמימות'},
+  high_protein: {cal:2200,pro:220,carb:180, calc:1000, label:'עתיר חלבון'},
+  high_calcium: {cal:1800,pro:120,carb:180, calc:1500, label:'עתיר סידן'},
+};
+const SL = {
+  cal: {min:800, max:4000, step:50,  fill:'var(--cal-f)'},
+  pro: {min:20,  max:300,  step:5,   fill:'var(--pro-f)'},
+  carb:{min:20,  max:500,  step:5,   fill:'var(--carb-f)'},
+  calc:{min:200, max:2000, step:50,  fill:'var(--calc-f)'},
+};
+
+let DB = JSON.parse(localStorage.getItem('nutApp10')||'{"users":[],"meals":{}}');
+let AU=null, imgB64=null, imgSrc=null, mealResult=null;
+let goalsFrom='home', selColor='#1D9E75', selGender='f';
+let activePresets=new Set();
+let manualIngCount=0;
+
+function sv(){try{localStorage.setItem('nutApp10',JSON.stringify(DB));}catch(e){}}
+function dk(){return new Date().toISOString().split('T')[0];}
+function todayM(){return(DB.meals[AU.id]||[]).filter(m=>m.date===dk());}
+function G(){return AU.goals;}
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ---- Gender & BMI ----
+function setGender(g){
+  selGender=g;
+  document.getElementById('gb-f').classList.toggle('on',g==='f');
+  document.getElementById('gb-m').classList.toggle('on',g==='m');
+  updateBMI();
+}
+function updateBMI(){
+  const age=parseInt(document.getElementById('pf-age').value)||0;
+  const wt=parseFloat(document.getElementById('pf-weight').value)||0;
+  const strip=document.getElementById('bmi-strip');
+  if(!wt||!age){strip.style.display='none';return;}
+  const h=selGender==='f'?163:175;
+  const bmi=wt/((h/100)**2);
+  strip.style.display='flex';
+  document.getElementById('bmi-val').textContent=bmi.toFixed(1);
+  let label,bg,col;
+  if(bmi<18.5){label='תת משקל';bg='#E6F1FB';col='#042C53';}
+  else if(bmi<25){label='תקין';bg='#E1F5EE';col='#085041';}
+  else if(bmi<30){label='עודף משקל';bg='#FAEEDA';col='#633806';}
+  else{label='השמנה';bg='#FCEBEB';col='#501313';}
+  const el=document.getElementById('bmi-status');
+  el.textContent=label;
+  el.style.cssText=`background:${bg};color:${col};font-size:10px;padding:2px 8px;border-radius:10px;`;
+}
+
+// ---- Login ----
+function renderLogin(){
+  const el=document.getElementById('user-cards');
+  if(!DB.users.length){el.innerHTML='<div style="text-align:center;font-size:13px;color:var(--sub);padding:12px 0;">אין פרופילים עדיין. הוסיפי פרופיל ראשון.</div>';return;}
+  el.innerHTML=DB.users.map(u=>{
+    const cal=(DB.meals[u.id]||[]).filter(m=>m.date===dk()).reduce((a,m)=>a+m.cal,0);
+    const tags=(u.activePresets||[]).map(p=>PRESETS[p]?.label||p).join(', ')||'יעדים מותאמים';
+    const prof=[u.profile?.age?`גיל ${u.profile.age}`:'',u.profile?.weight?`${u.profile.weight} ק"ג`:'',u.profile?.gender==='m'?'זכר':'נקבה'].filter(Boolean).join(' · ');
+    return`<div class="u-card" onclick="selectUser('${u.id}')">
+      <div class="avatar" style="background:${u.color};">${u.name.charAt(0)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="u-name">${u.name}</div>
+        ${prof?`<div class="u-meta">${prof}</div>`:''}
+        <div class="u-meta">${tags} · ${u.goals.cal} קק"ל</div>
+        ${cal?`<div class="u-meta">היום: ${cal} קק"ל נאכלו</div>`:''}
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sub)" stroke-width="1.5" style="flex-shrink:0;"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function pickColor(el){document.querySelectorAll('.cdot').forEach(d=>d.classList.remove('sel'));el.classList.add('sel');selColor=el.dataset.c;}
+
+function createUser(){
+  const name=document.getElementById('new-name').value.trim();if(!name)return;
+  const u={id:'u'+Date.now(),name,color:selColor,goals:{cal:1500,pro:120,carb:150,calc:1000},activePresets:[],profile:{age:'',weight:'',gender:'f'}};
+  DB.users.push(u);sv();AU=u;activePresets=new Set();selGender='f';
+  goalsFrom='new';
+  document.getElementById('goals-title').textContent='יעדים יומיים';
+  document.getElementById('goals-sub').textContent=name+' — קבעי יעדים אישיים';
+  resetGoalsUI();go('goals');
+}
+function selectUser(id){AU=DB.users.find(u=>u.id===id);initHome();go('home');}
+
+// ---- Goals ----
+function openGoals(){
+  goalsFrom='home';
+  document.getElementById('goals-title').textContent='יעדים יומיים';
+  document.getElementById('goals-sub').textContent=AU.name;
+  activePresets=new Set(AU.activePresets||[]);
+  selGender=AU.profile?.gender||'f';
+  resetGoalsUI();
+  activePresets.forEach(p=>{const b=document.querySelector(`.preset-btn[data-p="${p}"]`);if(b)b.classList.add('on');});
+  document.getElementById('pf-age').value=AU.profile?.age||'';
+  document.getElementById('pf-weight').value=AU.profile?.weight||'';
+  setGender(selGender);loadSliders();go('goals');
+}
+function goalsBack(){if(goalsFrom==='new'){renderLogin();go('login');}else goHome();}
+function resetGoalsUI(){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pf-age').value='';document.getElementById('pf-weight').value='';
+  document.getElementById('bmi-strip').style.display='none';
+  setGender(selGender);loadSliders();
+}
+function togglePreset(btn){
+  const p=btn.dataset.p;
+  if(activePresets.has(p)){activePresets.delete(p);btn.classList.remove('on');}
+  else{activePresets.add(p);btn.classList.add('on');}
+  applyActivePresets();
+}
+function applyActivePresets(){
+  if(!activePresets.size)return;
+  Object.keys(SL).forEach(k=>{
+    const avg=Math.round([...activePresets].map(p=>PRESETS[p][k]).reduce((a,v)=>a+v,0)/activePresets.size);
+    const sl=document.getElementById('sl-'+k);sl.value=avg;slChg(k,sl,SL[k].min,SL[k].max,SL[k].fill);
+  });
+}
+function loadSliders(){
+  const g=G();
+  Object.keys(SL).forEach(k=>{const sl=document.getElementById('sl-'+k);sl.value=g[k];slChg(k,sl,SL[k].min,SL[k].max,SL[k].fill);});
+}
+function slChg(key,sl,min,max,color){
+  document.getElementById('gv-'+key).textContent=Math.round(sl.value);
+  const pct=((sl.value-min)/(max-min)*100).toFixed(1);
+  sl.style.background=`linear-gradient(to left,${color} 0%,${color} ${pct}%,var(--bg3) ${pct}%)`;
+}
+function saveGoals(){
+  AU.goals={cal:+document.getElementById('sl-cal').value,pro:+document.getElementById('sl-pro').value,carb:+document.getElementById('sl-carb').value,calc:+document.getElementById('sl-calc').value};
+  AU.activePresets=[...activePresets];
+  AU.profile={age:document.getElementById('pf-age').value,weight:document.getElementById('pf-weight').value,gender:selGender};
+  const i=DB.users.findIndex(u=>u.id===AU.id);if(i>=0)DB.users[i]=AU;sv();
+  initHome();go('home');
+}
+
+// ---- Home ----
+function initHome(){
+  const now=new Date(),h=now.getHours();
+  const greet=h<12?'בוקר טוב':h<17?'צהריים טובים':'ערב טוב';
+  document.getElementById('greet-name').textContent=greet+', '+AU.name+' 👋';
+  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  document.getElementById('greet-date').textContent=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  renderGoalTags();updateBanner();renderLog();
+}
+function renderGoalTags(){
+  const el=document.getElementById('goal-tags'),presets=AU.activePresets||[];
+  el.innerHTML=presets.map(p=>`<span class="g-tag">${PRESETS[p]?.label||p}</span>`).join('');
+}
+function updateBanner(){
+  const t=todayM().reduce((a,m)=>({cal:a.cal+m.cal,pro:a.pro+m.pro,carb:a.carb+m.carb,calc:a.calc+m.calc}),{cal:0,pro:0,carb:0,calc:0});
+  const g=G();
+  ['cal','pro','carb','calc'].forEach(k=>document.getElementById('mc-'+k).textContent=Math.round(t[k]));
+  document.getElementById('mt-cal').textContent='מתוך '+g.cal;
+  document.getElementById('mt-pro').textContent="מתוך "+g.pro+"ג'";
+  document.getElementById('mt-carb').textContent="מתוך "+g.carb+"ג'";
+  document.getElementById('mt-calc').textContent="מתוך "+g.calc+"מג'";
+  ['cal','pro','carb','calc'].forEach(k=>document.getElementById('bf-'+k).style.width=Math.min(100,t[k]/g[k]*100)+'%');
+}
+function renderLog(){
+  const m=todayM(),w=document.getElementById('log-wrap');
+  if(!m.length){w.style.display='none';return;}
+  w.style.display='block';
+  document.getElementById('log-list').innerHTML=m.map(meal=>`
+    <div class="log-item">
+      ${meal.imgSrc?`<img class="log-thumb" src="${meal.imgSrc}"/>`:`<div class="log-ph">🍽</div>`}
+      <div style="flex:1;min-width:0;"><div class="log-name">${meal.name}</div><div class="log-meta">${meal.time} · חלבון ${meal.pro}ג' · סידן ${meal.calc}מג'</div></div>
+      <div class="log-cal">${meal.cal} קק"ל</div>
+    </div>`).join('');
+}
+function goHome(){go('home');updateBanner();renderLog();}
+
+// ---- File handling ----
+function handleFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{imgSrc=ev.target.result;imgB64=ev.target.result.split(',')[1];document.getElementById('prev-img').src=imgSrc;go('preview');};
+  r.readAsDataURL(f);e.target.value='';
+}
+
+// ---- Gemini analysis via proxy ----
+async function analyze(){
+  if(!imgB64)return;
+  go('loading');
+  document.getElementById('ll').textContent='מזהה מרכיבים...';
+  document.getElementById('ls').textContent='AI מנתח את הארוחה';
+  try{
+    const res=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({imageBase64:imgB64,mimeType:'image/jpeg'})
+    });
+    const data=await res.json();
+    if(data.quota_exceeded||res.status===429){
+      // Free quota exceeded — go to manual
+      showManual('המכסה החינמית של AI נגמרה החודש. הזיני את המרכיבים ידנית ואנחנו נחשב את הערכים התזונתיים.');
+      return;
+    }
+    if(!data.ok||!data.result){
+      showManual('לא הצלחנו לנתח את התמונה אוטומטית. הזיני ידנית.');
+      return;
+    }
+    mealResult=data.result;
+    // Now fetch USDA for each ingredient
+    document.getElementById('ll').textContent='מחפש נתוני תזונה ב-USDA...';
+    document.getElementById('ls').textContent='קלוריות, חלבון, פחמימות וסידן';
+    const enriched=[];
+    for(const ing of data.result.ingredients){
+      const wg=parseW(ing.amount);
+      enriched.push({...ing,wg,usda:await fetchUSDA(ing.name_en,wg)});
+    }
+    mealResult.enriched=enriched;
+    showResult(enriched,data.result.meal_name);
+  }catch(err){
+    showManual('שגיאת רשת. בדקי חיבור לאינטרנט, או הזיני ידנית.');
+  }
+}
+
+// ---- Manual entry ----
+function showManual(reason){
+  document.getElementById('manual-reason').textContent=reason;
+  document.getElementById('manual-meal-name').value='';
+  document.getElementById('manual-ing-list').innerHTML='';
+  manualIngCount=0;
+  addManualIng();addManualIng();addManualIng(); // start with 3 rows
+  go('manual');
+}
+function addManualIng(){
+  manualIngCount++;
+  const id='mi'+manualIngCount;
+  const row=document.createElement('div');
+  row.className='manual-ing-row';row.id=id;
+  row.innerHTML=`
+    <input class="f-input" placeholder="שם המרכיב (בעברית)" style="flex:2;margin-bottom:0;" data-role="name"/>
+    <input class="f-input small" placeholder="כמות (גרם)" type="number" min="1" style="margin-bottom:0;" data-role="weight"/>
+    <button class="remove-ing" onclick="document.getElementById('${id}').remove()">✕</button>`;
+  document.getElementById('manual-ing-list').appendChild(row);
+}
+async function submitManual(){
+  const mealName=document.getElementById('manual-meal-name').value.trim()||'ארוחה';
+  const rows=[...document.querySelectorAll('.manual-ing-row')];
+  const ingredients=rows.map(row=>({
+    name_he:row.querySelector('[data-role=name]').value.trim(),
+    name_en:row.querySelector('[data-role=name]').value.trim(), // will search USDA with Hebrew — works for common foods
+    amount:row.querySelector('[data-role=weight]').value ? row.querySelector('[data-role=weight]').value+' גרם' : '100 גרם',
+    wg:parseFloat(row.querySelector('[data-role=weight]').value)||100,
+  })).filter(i=>i.name_he);
+  if(!ingredients.length){alert('הזיני לפחות מרכיב אחד');return;}
+  go('loading');
+  document.getElementById('ll').textContent='מחפש נתוני תזונה ב-USDA...';
+  document.getElementById('ls').textContent='קלוריות, חלבון, פחמימות וסידן';
+  const enriched=[];
+  for(const ing of ingredients){
+    enriched.push({...ing,usda:await fetchUSDA(ing.name_en,ing.wg)});
+  }
+  mealResult={meal_name:mealName,enriched};
+  showResult(enriched,mealName);
+}
+
+// ---- USDA ----
+async function fetchUSDA(name,wg){
+  try{
+    const r=await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=${encodeURIComponent(name)}&dataType=Foundation,SR%20Legacy&pageSize=1`);
+    const d=await r.json();const food=d.foods&&d.foods[0];if(!food)return null;
+    const get=id=>{const n=food.foodNutrients.find(n=>n.nutrientId===id);return n?n.value:0;};
+    const f=wg/100;
+    return{name:food.description,cal:Math.round(get(N_E)*f),pro:Math.round(get(N_P)*f*10)/10,carb:Math.round(get(N_C)*f*10)/10,calc:Math.round(get(N_CA)*f)};
+  }catch(e){return null;}
+}
+function parseW(amt){
+  const m=amt.match(/(\d+(\.\d+)?)/);if(!m)return 100;const n=parseFloat(m[1]);
+  if(/כוס/.test(amt))return n*240;if(/כף/.test(amt)&&!/כפית/.test(amt))return n*15;
+  if(/כפית/.test(amt))return n*5;if(/יחיד|ביצ|פרוס|חתיכ/.test(amt))return n*60;return n;
+}
+
+// ---- Show result ----
+function showResult(enriched,mealName){
+  go('result');
+  document.getElementById('res-thumb').src=imgSrc||'';
+  document.getElementById('res-thumb').style.display=imgSrc?'block':'none';
+  document.getElementById('res-name').textContent=mealName||'ארוחה';
+  document.getElementById('res-time').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+' · עכשיו';
+  let tc=0,tp=0,tcarb=0,tcalc=0,html='';
+  for(const ing of enriched){
+    const u=ing.usda;if(u){tc+=u.cal;tp+=u.pro;tcarb+=u.carb;tcalc+=u.calc;}
+    html+=`<div class="ing-row">
+      <div class="ing-top"><div><div class="ing-name">${ing.name_he}</div><div class="ing-amt">${ing.amount}</div></div><div class="ing-cal">${u?u.cal+' קק"ל':'—'}</div></div>
+      <div class="ing-pills">${u?`<span class="pill p-pro">${u.pro}ג' חלבון</span><span class="pill p-carb">${u.carb}ג' פחמ'</span><span class="pill p-calc">${u.calc}מג' סידן</span>`:'<span class="pill p-warn">לא נמצא ב-USDA</span>'}</div>
+      ${u?`<div class="ing-src">USDA · ${u.name.substring(0,44)}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('ing-list').innerHTML=html;
+  document.getElementById('t-cal').textContent=Math.round(tc);
+  document.getElementById('t-pro').textContent=Math.round(tp);
+  document.getElementById('t-carb').textContent=Math.round(tcarb);
+  document.getElementById('t-calc').textContent=Math.round(tcalc);
+  const g=G(),prev=todayM().reduce((a,m)=>({cal:a.cal+m.cal,pro:a.pro+m.pro,carb:a.carb+m.carb,calc:a.calc+m.calc}),{cal:0,pro:0,carb:0,calc:0});
+  const bdg=(v,t)=>{const p=v/t;if(p>1.1)return'<span class="bdg b-over">חרג</span>';if(p>=.85)return'<span class="bdg b-ok">✓ יעד</span>';return'<span class="bdg b-warn">חסר</span>';};
+  document.getElementById('vs-rows').innerHTML=[
+    {l:'קלוריות',add:tc,   prev:prev.cal,  tgt:g.cal,  u:'',    f:'var(--cal-f)'},
+    {l:'חלבון',  add:tp,   prev:prev.pro,  tgt:g.pro,  u:"ג'",  f:'var(--pro-f)'},
+    {l:'פחמימות',add:tcarb,prev:prev.carb, tgt:g.carb, u:"ג'",  f:'var(--carb-f)'},
+    {l:'סידן',   add:tcalc,prev:prev.calc, tgt:g.calc,  u:"מג'", f:'var(--calc-f)'},
+  ].map(r=>{
+    const tot=r.prev+r.add,pct=Math.min(100,Math.round(tot/r.tgt*100));
+    return`<div class="vs-row"><div class="vs-lbl">${r.l}</div><div class="vs-track"><div class="vs-fill" style="width:${pct}%;background:${r.f};"></div></div><div class="vs-num">${Math.round(tot)}/${r.tgt}${r.u}</div>${bdg(tot,r.tgt)}</div>`;
+  }).join('');
+  document.getElementById('vs-box').style.display='block';
+  document.getElementById('err-sec').innerHTML='';
+}
+
+// ---- Save ----
+function saveMeal(){
+  if(!mealResult||!mealResult.enriched)return;
+  const t=mealResult.enriched.reduce((a,x)=>{const u=x.usda||{cal:0,pro:0,carb:0,calc:0};return{cal:a.cal+u.cal,pro:a.pro+u.pro,carb:a.carb+u.carb,calc:a.calc+u.calc};},{cal:0,pro:0,carb:0,calc:0});
+  if(!DB.meals[AU.id])DB.meals[AU.id]=[];
+  DB.meals[AU.id].push({id:Date.now(),date:dk(),name:mealResult.meal_name,time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),cal:Math.round(t.cal),pro:Math.round(t.pro),carb:Math.round(t.carb),calc:Math.round(t.calc),imgSrc,ingredients:mealResult.enriched});
+  sv();imgB64=null;imgSrc=null;mealResult=null;go('saved');
+}
+
+// Boot
+renderLogin();
+</script>
+</body>
+</html>
