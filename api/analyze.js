@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   if (!imageBase64) return res.status(400).json({ error: 'Missing image' });
   const prompt = `Identify every food item in this meal photo. Return ONLY valid JSON: {"meal_name":"שם בעברית","ingredients":[{"name_en":"English name","name_he":"שם בעברית","amount":"כמות"}]}`;
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType || 'image/jpeg', data: imageBase64 } }, { text: prompt }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 1024 } })
